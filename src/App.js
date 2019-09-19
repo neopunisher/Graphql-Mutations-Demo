@@ -1,26 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import { Resolver } from 'found-relay'
+import { ReactRelayContext } from 'react-relay'
+import { createGlobalStyle } from 'styled-components'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import { environment } from './utils/relay'
+
+import Router from './components/Router'
+
+const GlobalStyle = createGlobalStyle`
+  body {
+    background: #f7f7f7;
+    color: #404040;
+  }
+`
+
+const relayContext = {
+  environment,
+  variables: {},
 }
 
-export default App;
+const App = () => {
+  return (
+    <ReactRelayContext.Provider value={relayContext}>
+      <GlobalStyle />
+      <Router resolver={new Resolver(environment)} />
+    </ReactRelayContext.Provider>
+  )
+}
+
+export default App

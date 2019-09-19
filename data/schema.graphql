@@ -1,0 +1,127 @@
+input AddMessageInput {
+  text: String!
+  conversationId: ID!
+  admin: Boolean!
+  clientMutationId: String
+}
+
+type AddMessagePayload {
+  messageEdge: MessageEdge!
+  conversation: Conversation!
+  clientMutationId: String
+}
+
+type Conversation implements Node {
+  """The ID of an object"""
+  id: ID!
+  name: String!
+  messages(after: String, first: Int, before: String, last: Int): MessageConnection
+  totalCount: Int!
+}
+
+"""A connection to a list of items."""
+type ConversationConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [ConversationEdge]
+}
+
+"""An edge in a connection."""
+type ConversationEdge {
+  """The item at the end of the edge"""
+  node: Conversation
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type ConversationStartedPayload {
+  conversationEdge: ConversationEdge
+}
+
+type ConversationUpdatedPayload {
+  conversation: Conversation
+}
+
+type Message implements Node {
+  """The ID of an object"""
+  id: ID!
+
+  """The ID of an object"""
+  conversationId: ID!
+  text: String!
+  admin: Boolean!
+}
+
+"""A connection to a list of items."""
+type MessageConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [MessageEdge]
+}
+
+"""An edge in a connection."""
+type MessageEdge {
+  """The item at the end of the edge"""
+  node: Message
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type Mutation {
+  addMessage(input: AddMessageInput!): AddMessagePayload
+  startConversation(input: StartConversationInput!): StartConversationPayload
+}
+
+"""An object with an ID"""
+interface Node {
+  """The id of the object."""
+  id: ID!
+}
+
+"""Information about pagination in a connection."""
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+}
+
+type Query {
+  conversations(after: String, first: Int, before: String, last: Int): ConversationConnection
+  conversation(id: ID!): Conversation
+
+  """Fetches an object given its ID"""
+  node(
+    """The ID of an object"""
+    id: ID!
+  ): Node
+  viewer: Query
+}
+
+input StartConversationInput {
+  name: String!
+  clientMutationId: String
+}
+
+type StartConversationPayload {
+  conversation: Conversation!
+  clientMutationId: String
+}
+
+type Subscription {
+  conversationUpdated(conversationId: ID!): ConversationUpdatedPayload
+  conversationStarted: ConversationStartedPayload
+}
