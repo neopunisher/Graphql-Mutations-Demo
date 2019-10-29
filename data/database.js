@@ -1,80 +1,104 @@
-export class Message {
-  constructor(id, text, sentAt, admin) {
-    this.id = id
-    this.text = text
-    this.sentAt = sentAt
-    this.admin = admin
-  }
-}
+const uuid = require('uuid/v4');
+const asyncRedis = require("async-redis");
+const client = asyncRedis.createClient();
 
-export class Conversation {
-  constructor(id, name) {
+client.on("error", function (err) {
+    console.log("Error " + err);
+});
+
+export class Animation {
+  constructor(id, name, frames, delay = 100) {
     this.id = id
     this.name = name
-    this.lastEnteredText = null
+    this.delay = delay
+    this.frames = frames
+  }
+}
+export class Message {
+  constructor(id, text) {
+    this.id = id
+    this.text = text
+  }
+}
+export class AnimationSequence {
+  constructor(id, name, animations) {
+    this.id = id
+    this.name = name
+    this.animations = animations
+  }
+}
+export class AnimationFrame {
+  constructor(leds, index) {
+    this.leds = leds
+    this.index = index
   }
 }
 
-let nextConversationId: number = 0
-let nextMessageId: number = 0
-
-const conversationsById = new Map()
-const messagesById = new Map()
-const messageIdsByConversationId = new Map()
-
-function getMessageIdsForConversation(id) {
-  return messageIdsByConversationId.get(id) || []
+async function getAnimationFramesForAnimation(id) {
+  const frames = await client.lrange(`animationFrames:${id}`, 0, -1)
+  return frames.map((leds, idx) => new AnimationFrame(JSON.parse(leds), idx))
+  }
+async function getAnimationsForAnimationSequence(id) {
+  const animations = await client.lrange(`animationSequenceAnimations:${id}`, 0, -1)
+  return await Promise.all(animations.map(getAnimation))
+}
+    
+export async function getAnimation(id) {
+  const frames = await getAnimationFramesForAnimation(id)
+  const animation = await client.hgetall(`animation:${id}`)
+  return new Animation(animation.id, animation.name, frames, animation.delay)
 }
 
-export function getMessage(id) {
-  return messagesById.get(id)
+export async function getMessage(id) {
+  const message = await client.hgetall(`message:${id}`)
+  return new Animation(message.id, message.text)
 }
 
-export function getConversation(id) {
-  return conversationsById.get(id)
+export async function getAnimationName(id) {
+  return await client.hget(`animation:${id}`, 'name')
 }
 
-export function getMessagesByConversationId(conversationId) {
-  const messageIds = getMessageIdsForConversation(conversationId)
-
-  return messageIds.map(getMessage)
+export async function getMessageText(id) {
+  return await client.hget(`message:${id}`, 'text')
 }
 
-export function getConversations() {
-  return [...conversationsById.values()]
+export async function getAnimationSequenceName(id) {
+  return await client.hget(`animationSequence:${id}`, 'name')
 }
 
-export function setConversationEnteredText(conversationId, lastEnteredText) {
-  const conversation = getConversation(conversationId)
-
-  conversationsById.set(conversation.id, {
-    ...conversation,
-    lastEnteredText,
-  })
+export async function getAnimationSequence(id) {
+  const animations = await getAnimationsForAnimationSequence(id)
+  const animationSequence = await client.hgetall(`animationSequence:${id}`)
+  return new AnimationSequence(animationSequence.id, animationSequence.name, animations)
 }
 
-export function addMessage(conversationId, text, admin = false) {
-  const message = new Message(`${nextMessageId++}`, text, new Date(), admin)
-  messagesById.set(message.id, message)
-
-  const messageIds = getMessageIdsForConversation(conversationId)
-  messageIdsByConversationId.set(conversationId, messageIds.concat(message.id))
-
-  setConversationEnteredText(conversationId, null)
-
-  return message.id
+export async function getAnimations() {
+  const animations = await client.smembers(`animations`)
+  return await Promise.all(animations.map(getAnimation))
 }
 
-export function startConversation(name) {
-  const conversation = new Conversation(`${nextConversationId++}`, name)
-  conversationsById.set(conversation.id, conversation)
-  addMessage(conversation.id, 'Hey! How can I help?', true)
-
-  return conversation.id
+export async function getAnimationSequences() {
+  return await Promise.all(await client.smembers(`animationSequences`).map(getAnimationSequence))
 }
 
-const exampleConversationId = startConversation('Braden')
-addMessage(exampleConversationId, 'Where are my pants?')
+export async function addAnimation(name, delay = 100) {
+  const animation = new Animation(uuid(), name, [], delay)
+  const hash = {id: animation.id, name: animation.name, delay: animation.delay}
+  const keys_and_values = [].concat(...Object.entries(hash))
 
-const anotherExampleId = startConversation('John')
-addMessage(anotherExampleId, 'My computer crashes everytime I open netscape')
+  await Promise.all([client.hset(`animation:${animation.id}`, ...keys_and_values),
+                     client.sadd(`animations`, animation.id)])
+  return hash
+}
+export async function addAnimationFrame(id, leds) {
+  return new AnimationFrame(leds, await client.rpush(`animationFrames:${id}`, JSON.stringify(leds)))
+}
+export async function addAnimationSequence(name, animation_ids) {
+  const animationSequence = new AnimationSequence(uuid(), name, await Promise.all(animation_ids.map(getAnimation)))
+  const keys_and_values = [].concat(...Object.entries({id: animationSequence.id, name: animationSequence.name}))
+  
+  await Promise.all([client.sadd(`animationSequences`, animationSequence.id),
+                     client.hset(`animationSequence:${animationSequence.id}`, ...keys_and_values),
+                     client.rpush(`animationSequenceAnimations:${animationSequence.id}`, ...animation_ids)])
+  return animationSequence
+}

@@ -37,7 +37,7 @@ SubscriptionServer.create(
     execute,
     schema,
     subscribe,
-    onOperation: async (message, params) => {
+    onOperation: (message, params) => {
       return {
         ...params,
         context,

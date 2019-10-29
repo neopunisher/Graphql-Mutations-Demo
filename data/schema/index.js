@@ -2,19 +2,21 @@ import { GraphQLObjectType, GraphQLSchema } from 'graphql'
 
 import { nodeField } from './nodes.js'
 import {
-  ConversationsQuery,
-  ConversationQuery,
-} from './queries/ConversationQuery'
-import { AddMessageMutation } from './mutations/AddMessageMutation'
-import { StartConversationMutation } from './mutations/StartConversationMutation'
-import { ConversationUpdatedSubscription } from './subscriptions/ConversationUpdatedSubscription'
-import { ConversationStartedSubscription } from './subscriptions/ConversationStartedSubscription'
+  AnimationQuery, 
+  AnimationsQuery, 
+  AnimationSequencesQuery, 
+  AnimationSequenceQuery
+} from './queries/AnimationQuery'
+import { AddAnimationMutation } from './mutations/AddAnimationMutation'
+import { MessageAddedSubscription } from './subscriptions/MessageAddedSubscription'
 
 const Query = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
-    conversations: ConversationsQuery,
-    conversation: ConversationQuery,
+    animation: AnimationQuery,
+    animations: AnimationsQuery,
+    animationSequence: AnimationSequenceQuery,
+    animationSequences: AnimationSequencesQuery,
     node: nodeField,
     viewer: {
       type: Query,
@@ -26,16 +28,14 @@ const Query = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
-    addMessage: AddMessageMutation,
-    startConversation: StartConversationMutation,
+    addAnimation: AddAnimationMutation,
   },
 })
 
 const Subscription = new GraphQLObjectType({
   name: 'Subscription',
   fields: {
-    conversationUpdated: ConversationUpdatedSubscription,
-    conversationStarted: ConversationStartedSubscription,
+    messageAdded: MessageAddedSubscription,
   },
 })
 

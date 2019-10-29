@@ -12,13 +12,29 @@ const messageFragment = graphql`
   }
 `
 
-function ConversationChatMessage(props) {
+const getName = (message, name, isAdmin) => {
+  if (isAdmin && message.admin) {
+    return 'You'
+  }
+
+  if (isAdmin) {
+    return name
+  }
+
+  if (message.admin) {
+    return 'Admin'
+  }
+
+  return 'You'
+}
+
+function ConversationChatMessage({ isAdmin, name, ...props }) {
   const message = useFragment(messageFragment, props.message)
 
   return (
     <ListItem>
       <ListItemText
-        primary={message.admin ? 'Admin' : 'You'}
+        primary={getName(message, name, isAdmin)}
         secondary={message.text}
       />
     </ListItem>

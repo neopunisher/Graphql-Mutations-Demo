@@ -1,81 +1,80 @@
-input AddMessageInput {
-  text: String!
-  conversationId: ID!
-  admin: Boolean!
+input AddAnimationInput {
+  name: String!
+  delay: Int
   clientMutationId: String
 }
 
-type AddMessagePayload {
-  messageEdge: MessageEdge!
-  conversation: Conversation!
+type AddAnimationPayload {
+  animation: Animation!
   clientMutationId: String
 }
 
-type Conversation implements Node {
+type Animation implements Node {
   """The ID of an object"""
   id: ID!
   name: String!
-  messages(after: String, first: Int, before: String, last: Int): MessageConnection
-  totalCount: Int!
+  frames: [AnimationFrame]
 }
 
 """A connection to a list of items."""
-type ConversationConnection {
+type AnimationConnection {
   """Information to aid in pagination."""
   pageInfo: PageInfo!
 
   """A list of edges."""
-  edges: [ConversationEdge]
+  edges: [AnimationEdge]
 }
 
 """An edge in a connection."""
-type ConversationEdge {
+type AnimationEdge {
   """The item at the end of the edge"""
-  node: Conversation
+  node: Animation
 
   """A cursor for use in pagination"""
   cursor: String!
 }
 
-type ConversationStartedPayload {
-  conversationEdge: ConversationEdge
+type AnimationFrame {
+  leds: [Pixel]
 }
 
-type ConversationUpdatedPayload {
-  conversation: Conversation
+type AnimationSequence implements Node {
+  """The ID of an object"""
+  id: ID!
+  name: String!
+  animations: [Animation]
+}
+
+"""A connection to a list of items."""
+type AnimationSequenceConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [AnimationSequenceEdge]
+}
+
+"""An edge in a connection."""
+type AnimationSequenceEdge {
+  """The item at the end of the edge"""
+  node: AnimationSequence
+
+  """A cursor for use in pagination"""
+  cursor: String!
 }
 
 type Message implements Node {
   """The ID of an object"""
   id: ID!
-
-  """The ID of an object"""
-  conversationId: ID!
   text: String!
-  admin: Boolean!
 }
 
-"""A connection to a list of items."""
-type MessageConnection {
-  """Information to aid in pagination."""
-  pageInfo: PageInfo!
-
-  """A list of edges."""
-  edges: [MessageEdge]
-}
-
-"""An edge in a connection."""
-type MessageEdge {
-  """The item at the end of the edge"""
-  node: Message
-
-  """A cursor for use in pagination"""
-  cursor: String!
+type MessageAddedPayload {
+  message: Message
 }
 
 type Mutation {
-  addMessage(input: AddMessageInput!): AddMessagePayload
-  startConversation(input: StartConversationInput!): StartConversationPayload
+  addAnimation(input: AddAnimationInput!): AddAnimationPayload
 }
 
 """An object with an ID"""
@@ -99,9 +98,17 @@ type PageInfo {
   endCursor: String
 }
 
+type Pixel {
+  r: Int
+  g: Int
+  b: Int
+}
+
 type Query {
-  conversations(after: String, first: Int, before: String, last: Int): ConversationConnection
-  conversation(id: ID!): Conversation
+  animation(id: ID!): Animation
+  animations(after: String, first: Int, before: String, last: Int): AnimationConnection
+  animationSequence(id: ID!): AnimationSequence
+  animationSequences(after: String, first: Int, before: String, last: Int): AnimationSequenceConnection
 
   """Fetches an object given its ID"""
   node(
@@ -111,17 +118,6 @@ type Query {
   viewer: Query
 }
 
-input StartConversationInput {
-  name: String!
-  clientMutationId: String
-}
-
-type StartConversationPayload {
-  conversation: Conversation!
-  clientMutationId: String
-}
-
 type Subscription {
-  conversationUpdated(conversationId: ID!): ConversationUpdatedPayload
-  conversationStarted: ConversationStartedPayload
+  messageAdded: MessageAddedPayload
 }

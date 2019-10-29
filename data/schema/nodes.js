@@ -1,5 +1,5 @@
 import {
-  GraphQLBoolean,
+  GraphQLList,
   GraphQLInt,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -7,108 +7,148 @@ import {
 } from 'graphql'
 
 import {
-  connectionArgs,
   connectionDefinitions,
-  connectionFromArray,
   fromGlobalId,
   globalIdField,
   nodeDefinitions,
 } from 'graphql-relay'
 
 import {
-  Conversation,
+  Animation,
+  AnimationSequence,
   Message,
-  getConversation,
-  getMessage,
-  getMessagesByConversationId,
+  getAnimation,
+  getAnimationSequence,
+  getAnimationName,
+  getMessageText,
+  getAnimationSequenceName,
 } from '../database'
 
 const { nodeInterface, nodeField } = nodeDefinitions(
   globalId => {
     const { type, id } = fromGlobalId(globalId)
 
-    if (type === 'Conversation') {
-      return getConversation(id)
-    } else if (type === 'Message') {
-      return getMessage(id)
+    if (type === 'Animation') {
+      return getAnimation(id)
+    } else if (type === 'AnimationSequence') {
+      return getAnimationSequence(id)
     }
     return null
   },
   obj => {
-    if (obj instanceof Message) {
+    if (obj instanceof Animation) {
+      return GraphQLAnimation
+    } else if (obj instanceof AnimationSequence) {
+      return GraphQLAnimationSequence
+    } else if (obj instanceof Message) {
       return GraphQLMessage
-    } else if (obj instanceof Conversation) {
-      return GraphQLConversation
     }
     return null
   }
 )
 
+const GraphQLPixel = new GraphQLObjectType({
+  name: 'Pixel',
+  fields: {
+    r: {
+      type: GraphQLInt,
+      resolve: (root) =>
+        root[0]
+    },
+    g: {
+      type: GraphQLInt,
+      resolve: (root) =>
+        root[1]
+    },
+    b: {
+      type: GraphQLInt,
+      resolve: (root) =>
+        root[2]
+    },
+  },
+})
+
 const GraphQLMessage = new GraphQLObjectType({
   name: 'Message',
   fields: {
     id: globalIdField('Message'),
-    conversationId: globalIdField('Conversation'),
     text: {
       type: new GraphQLNonNull(GraphQLString),
-      resolve: message => message.text,
-    },
-    admin: {
-      type: new GraphQLNonNull(GraphQLBoolean),
-      resolve: message => message.admin,
+      resolve: root => getMessageText(root.id),
     },
   },
   interfaces: [nodeInterface],
 })
 
-const {
-  connectionType: MessagesConnection,
-  edgeType: GraphQLMessageEdge,
-} = connectionDefinitions({
-  name: 'Message',
-  nodeType: GraphQLMessage,
+const GraphQLAnimationFrame = new GraphQLObjectType({
+  name: 'AnimationFrame',
+  fields: {
+    leds: {
+      type: new GraphQLList(GraphQLPixel),
+      resolve: (root) =>
+        root.leds
+    },
+  },
 })
 
-const GraphQLConversation = new GraphQLObjectType({
-  name: 'Conversation',
+const GraphQLAnimation = new GraphQLObjectType({
+  name: 'Animation',
   fields: {
-    id: globalIdField('Conversation'),
+    id: globalIdField('Animation'),
     name: {
       type: new GraphQLNonNull(GraphQLString),
-      resolve: root => getConversation(root.id).name,
+      resolve: root => getAnimationName(root.id),
     },
-    messages: {
-      type: MessagesConnection,
-      args: connectionArgs,
-      resolve: (root, { after, before, first, last }) =>
-        connectionFromArray([...getMessagesByConversationId(root.id)], {
-          after,
-          before,
-          first,
-          last,
-        }),
-    },
-    totalCount: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: root => getMessagesByConversationId(root.id).length,
+    frames: {
+      type: new GraphQLList(GraphQLAnimationFrame),
+      resolve: (root) => root.frames
     },
   },
   interfaces: [nodeInterface],
 })
 
 const {
-  connectionType: ConversationConnection,
-  edgeType: GraphQLConversationEdge,
+  connectionType: AnimationConnection,
+  edgeType: GraphQLAnimationEdge,
 } = connectionDefinitions({
-  name: 'Conversation',
-  nodeType: GraphQLConversation,
+  name: 'Animation',
+  nodeType: GraphQLAnimation,
+})
+
+const GraphQLAnimationSequence = new GraphQLObjectType({
+  name: 'AnimationSequence',
+  fields: {
+    id: globalIdField('AnimationSequence'),
+    name: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: root => getAnimationSequenceName(root.id),
+    },
+    animations: {
+      type: new GraphQLList(GraphQLAnimation),
+      resolve: (root) =>
+        root.animations
+    },
+  },
+  interfaces: [nodeInterface],
+})
+
+const {
+  connectionType: AnimationSequenceConnection,
+  edgeType: GraphQLAnimationSequenceEdge,
+} = connectionDefinitions({
+  name: 'AnimationSequence',
+  nodeType: GraphQLAnimationSequence,
 })
 
 export {
-  ConversationConnection,
-  GraphQLConversation,
-  GraphQLConversationEdge,
-  GraphQLMessage,
-  GraphQLMessageEdge,
+  AnimationConnection,
+  GraphQLAnimation,
+  GraphQLAnimationEdge,
+  AnimationSequenceConnection,
+  GraphQLAnimationSequence,
+  GraphQLAnimationSequenceEdge,
+  GraphQLPixel,
+  GraphQLAnimationFrame,
   nodeField,
+  GraphQLMessage
 }

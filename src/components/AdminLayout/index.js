@@ -33,32 +33,30 @@ const subscription = graphql`
     conversationStarted {
       conversationEdge {
         node {
-          id
-          name
+          ...AdminConversationsList_conversations
         }
       }
     }
   }
 `
 
-const subscriptionConfig = {
-  configs: [
-    {
-      type: 'RANGE_ADD',
-      parentID: 'client:root',
-      connectionInfo: [
-        {
-          key: 'AdminLayout_conversations',
-          rangeBehavior: 'append',
-        },
-      ],
-      edgeName: 'conversationEdge',
-    },
-  ],
-}
-
 function AdminLayout({ conversations, children }) {
-  useSubscription(subscription, {}, subscriptionConfig)
+  useSubscription(subscription, null, {
+    configs: [
+      {
+        type: 'RANGE_ADD',
+        parentID: 'client:root',
+        connectionInfo: [
+          {
+            key: 'AdminLayout_conversations',
+            rangeBehavior: 'append',
+          },
+        ],
+        edgeName: 'conversationEdge',
+      },
+    ],
+  })
+
   const classes = useStyles()
 
   return (

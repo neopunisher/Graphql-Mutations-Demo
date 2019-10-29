@@ -46,23 +46,23 @@ const mutation = graphql`
   }
 `
 
-const ConversationChatField = ({ conversationId }) => {
+const ConversationChatField = ({ conversationId, isAdmin }) => {
   const [message, setMessage] = React.useState('')
 
   const [mutate, { loading }] = useMutation(mutation, {
-    // configs: [
-    //   {
-    //     type: 'RANGE_ADD',
-    //     parentID: conversationId,
-    //     connectionInfo: [
-    //       {
-    //         key: 'ConversationChat_messages',
-    //         rangeBehavior: 'append',
-    //       },
-    //     ],
-    //     edgeName: 'messageEdge',
-    //   },
-    // ],
+    configs: [
+      {
+        type: 'RANGE_ADD',
+        parentID: conversationId,
+        connectionInfo: [
+          {
+            key: 'ConversationChat_messages',
+            rangeBehavior: 'append',
+          },
+        ],
+        edgeName: 'messageEdge',
+      },
+    ],
     onCompleted: () => {
       setMessage('')
     },
@@ -73,7 +73,7 @@ const ConversationChatField = ({ conversationId }) => {
       variables: {
         input: {
           conversationId: conversationId,
-          admin: true,
+          admin: isAdmin,
           text: message,
         },
       },

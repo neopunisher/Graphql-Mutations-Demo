@@ -19,6 +19,7 @@ const routeConfig = (
     <Route path="admin" Component={AdminLayout} query={AdminLayout.Query}>
       <Route Component={Empty} />
       <Route
+        data={{ isAdmin: true }}
         path=":conversationId"
         Component={ConversationChat}
         query={ConversationChat.Query}
