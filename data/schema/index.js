@@ -8,6 +8,8 @@ import {
   AnimationSequenceQuery
 } from './queries/AnimationQuery'
 import { AddAnimationMutation } from './mutations/AddAnimationMutation'
+import { AddAnimationFrameMutation } from './mutations/AddAnimationFrameMutation'
+import { PlayAnimationMutation } from './mutations/PlayAnimationMutation'
 import { MessageAddedSubscription } from './subscriptions/MessageAddedSubscription'
 
 const Query = new GraphQLObjectType({
@@ -29,6 +31,8 @@ const Mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
     addAnimation: AddAnimationMutation,
+    addAnimationFrame: AddAnimationFrameMutation,
+    playAnimation: PlayAnimationMutation,
   },
 })
 

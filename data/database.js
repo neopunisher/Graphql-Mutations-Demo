@@ -84,21 +84,21 @@ export async function getAnimationSequences() {
 export async function addAnimation(name, delay = 100) {
   const animation = new Animation(uuid(), name, [], delay)
   const hash = {id: animation.id, name: animation.name, delay: animation.delay}
-  const keys_and_values = [].concat(...Object.entries(hash))
-
-  await Promise.all([client.hset(`animation:${animation.id}`, ...keys_and_values),
-                     client.sadd(`animations`, animation.id)])
-  return hash
+  let cmds = Object.entries(hash).map(([key, val])=>client.hset(`animation:${animation.id}`, key, val))
+  cmds.push(client.sadd(`animations`, animation.id))
+  await Promise.all(cmds)
+  return animation
 }
 export async function addAnimationFrame(id, leds) {
-  return new AnimationFrame(leds, await client.rpush(`animationFrames:${id}`, JSON.stringify(leds)))
+  const created_at_idx = await client.rpush(`animationFrames:${id}`, JSON.stringify(leds))
+  const frame = new AnimationFrame(leds, created_at_idx)
+  return frame
 }
 export async function addAnimationSequence(name, animation_ids) {
   const animationSequence = new AnimationSequence(uuid(), name, await Promise.all(animation_ids.map(getAnimation)))
-  const keys_and_values = [].concat(...Object.entries({id: animationSequence.id, name: animationSequence.name}))
-  
-  await Promise.all([client.sadd(`animationSequences`, animationSequence.id),
-                     client.hset(`animationSequence:${animationSequence.id}`, ...keys_and_values),
-                     client.rpush(`animationSequenceAnimations:${animationSequence.id}`, ...animation_ids)])
+  let cmds = Object.entries({id: animationSequence.id, name: animationSequence.name}).map(([key, val])=>client.hset(`animationSequence:${animationSequence.id}`, key, val))
+  cmds.push(client.sadd(`animationSequences`, animationSequence.id))
+  cmds.push(client.rpush(`animationSequenceAnimations:${animationSequence.id}`, ...animation_ids))
+  await Promise.all(cmds)
   return animationSequence
 }

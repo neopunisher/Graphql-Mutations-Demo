@@ -4,6 +4,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
+  GraphQLInputObjectType,
 } from 'graphql'
 
 import {
@@ -47,23 +48,34 @@ const { nodeInterface, nodeField } = nodeDefinitions(
   }
 )
 
+const GraphQLInputPixel = new GraphQLInputObjectType({
+  name: 'PixelInput',
+  fields: {
+    r: {
+      type: GraphQLInt,
+    },
+    g: {
+      type: GraphQLInt,
+    },
+    b: {
+      type: GraphQLInt,
+    },
+  },
+})
 const GraphQLPixel = new GraphQLObjectType({
   name: 'Pixel',
   fields: {
     r: {
       type: GraphQLInt,
-      resolve: (root) =>
-        root[0]
+      resolve: (root) => root[0]
     },
     g: {
       type: GraphQLInt,
-      resolve: (root) =>
-        root[1]
+      resolve: (root) => root[1]
     },
     b: {
       type: GraphQLInt,
-      resolve: (root) =>
-        root[2]
+      resolve: (root) => root[2]
     },
   },
 })
@@ -85,8 +97,7 @@ const GraphQLAnimationFrame = new GraphQLObjectType({
   fields: {
     leds: {
       type: new GraphQLList(GraphQLPixel),
-      resolve: (root) =>
-        root.leds
+      resolve: (root) => root.leds
     },
   },
 })
@@ -150,5 +161,6 @@ export {
   GraphQLPixel,
   GraphQLAnimationFrame,
   nodeField,
-  GraphQLMessage
+  GraphQLMessage,
+  GraphQLInputPixel
 }
