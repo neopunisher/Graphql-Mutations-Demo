@@ -1,3 +1,8 @@
+
+import {
+  decorate
+} from './ledbar'
+
 const uuid = require('uuid/v4');
 const asyncRedis = require("async-redis");
 const client = asyncRedis.createClient();
@@ -12,6 +17,7 @@ export class Animation {
     this.name = name
     this.delay = delay
     this.frames = frames
+    decorate(this)
   }
 }
 export class Message {
@@ -34,19 +40,34 @@ export class AnimationFrame {
   }
 }
 
+export class LedBar {
+  constructor({id, password, index, numLeds}){
+    this.id = id
+    this.numLeds = numLeds
+    this.index = index
+    this.secret = password
+  }
+}
+
 async function getAnimationFramesForAnimation(id) {
   const frames = await client.lrange(`animationFrames:${id}`, 0, -1)
   return frames.map((leds, idx) => new AnimationFrame(JSON.parse(leds), idx))
-  }
+}
+
 async function getAnimationsForAnimationSequence(id) {
   const animations = await client.lrange(`animationSequenceAnimations:${id}`, 0, -1)
   return await Promise.all(animations.map(getAnimation))
 }
-    
+
 export async function getAnimation(id) {
   const frames = await getAnimationFramesForAnimation(id)
   const animation = await client.hgetall(`animation:${id}`)
   return new Animation(animation.id, animation.name, frames, animation.delay)
+}
+
+export async function getLedBar(id) {
+  const ledbar = await client.hgetall(`ledbar:${id}`)
+  return new LedBar(ledbar)
 }
 
 export async function getMessage(id) {
@@ -79,6 +100,11 @@ export async function getAnimations() {
 
 export async function getAnimationSequences() {
   return await Promise.all(await client.smembers(`animationSequences`).map(getAnimationSequence))
+}
+
+export async function getLedBars() {
+  const ledbarIds = await client.smembers(`ledbars`)
+  return await Promise.all(ledbarIds.map(getLedBar))
 }
 
 export async function addAnimation(name, delay = 100) {

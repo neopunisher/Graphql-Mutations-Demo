@@ -1,3 +1,14 @@
+input AddAnimationFrameInput {
+  id: ID!
+  leds: [PixelInput]!
+  clientMutationId: String
+}
+
+type AddAnimationFramePayload {
+  animationFrame: AnimationFrame!
+  clientMutationId: String
+}
+
 input AddAnimationInput {
   name: String!
   delay: Int
@@ -63,6 +74,31 @@ type AnimationSequenceEdge {
   cursor: String!
 }
 
+type LedBar implements Node {
+  """The ID of an object"""
+  id: ID!
+  index: Int
+  numLeds: Int
+}
+
+"""A connection to a list of items."""
+type LedBarConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [LedBarEdge]
+}
+
+"""An edge in a connection."""
+type LedBarEdge {
+  """The item at the end of the edge"""
+  node: LedBar
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
 type Message implements Node {
   """The ID of an object"""
   id: ID!
@@ -75,6 +111,8 @@ type MessageAddedPayload {
 
 type Mutation {
   addAnimation(input: AddAnimationInput!): AddAnimationPayload
+  addAnimationFrame(input: AddAnimationFrameInput!): AddAnimationFramePayload
+  playAnimation(input: PlayAnimationInput!): PlayAnimationPayload
 }
 
 """An object with an ID"""
@@ -104,9 +142,29 @@ type Pixel {
   b: Int
 }
 
+input PixelInput {
+  r: Int
+  g: Int
+  b: Int
+}
+
+input PlayAnimationInput {
+  animationId: ID!
+  ledBarId: ID!
+  secret: String!
+  clientMutationId: String
+}
+
+type PlayAnimationPayload {
+  animation: Animation!
+  clientMutationId: String
+}
+
 type Query {
   animation(id: ID!): Animation
   animations(after: String, first: Int, before: String, last: Int): AnimationConnection
+  ledBar(id: ID!): LedBar
+  ledBars(after: String, first: Int, before: String, last: Int): LedBarConnection
   animationSequence(id: ID!): AnimationSequence
   animationSequences(after: String, first: Int, before: String, last: Int): AnimationSequenceConnection
 

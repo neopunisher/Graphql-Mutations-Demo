@@ -26,6 +26,7 @@ app.use(
     schema,
     pretty: true,
     graphiql: true,
+
   })
 )
 

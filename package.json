@@ -20,6 +20,7 @@
     "graphql-relay": "^0.6.0",
     "graphql-subscriptions": "^1.1.0",
     "prettier": "^1.18.2",
+    "pryjs": "^1.0.3",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-relay": "^5.0.0",
@@ -41,6 +42,8 @@
     "start:server": "babel-node ./server.js",
     "start:client": "react-scripts start",
     "update-schema": "babel-node ./scripts/updateSchema.js",
+    "clear-bar": "babel-node ./scripts/clearBars.js",
+    "generate-bar": "babel-node ./scripts/generateBars.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

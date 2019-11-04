@@ -18,6 +18,8 @@ import {
   Animation,
   AnimationSequence,
   Message,
+  LedBar,
+  getLedBar,
   getAnimation,
   getAnimationSequence,
   getAnimationName,
@@ -33,6 +35,8 @@ const { nodeInterface, nodeField } = nodeDefinitions(
       return getAnimation(id)
     } else if (type === 'AnimationSequence') {
       return getAnimationSequence(id)
+    } else if (type === 'LedBar') {
+      return getLedBar(id)
     }
     return null
   },
@@ -43,6 +47,8 @@ const { nodeInterface, nodeField } = nodeDefinitions(
       return GraphQLAnimationSequence
     } else if (obj instanceof Message) {
       return GraphQLMessage
+    } else if (obj instanceof LedBar) {
+      return GraphQLLedBar
     }
     return null
   }
@@ -79,6 +85,31 @@ const GraphQLPixel = new GraphQLObjectType({
     },
   },
 })
+
+const GraphQLLedBar = new GraphQLObjectType({
+  name: 'LedBar',
+  fields: {
+    id: globalIdField('LedBar'),
+    index: {
+      type: GraphQLInt,
+      resolve: (root) => root.index
+    },
+    numLeds: {
+      type: GraphQLInt,
+      resolve: (root) => root.numLeds
+    },
+  },
+  interfaces: [nodeInterface],
+})
+
+const {
+  connectionType: LedBarConnection,
+  edgeType: GraphQLLedBarEdge,
+} = connectionDefinitions({
+  name: 'LedBar',
+  nodeType: GraphQLLedBar,
+})
+
 
 const GraphQLMessage = new GraphQLObjectType({
   name: 'Message',
@@ -155,6 +186,8 @@ export {
   AnimationConnection,
   GraphQLAnimation,
   GraphQLAnimationEdge,
+  LedBarConnection,
+  GraphQLLedBarEdge,
   AnimationSequenceConnection,
   GraphQLAnimationSequence,
   GraphQLAnimationSequenceEdge,
@@ -162,5 +195,6 @@ export {
   GraphQLAnimationFrame,
   nodeField,
   GraphQLMessage,
+  GraphQLLedBar,
   GraphQLInputPixel
 }

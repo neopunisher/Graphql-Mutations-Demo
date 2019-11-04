@@ -7,6 +7,12 @@ import {
   AnimationSequencesQuery, 
   AnimationSequenceQuery
 } from './queries/AnimationQuery'
+
+import {
+  LedBarQuery, 
+  LedBarsQuery,
+} from './queries/LedBarQuery'
+
 import { AddAnimationMutation } from './mutations/AddAnimationMutation'
 import { AddAnimationFrameMutation } from './mutations/AddAnimationFrameMutation'
 import { PlayAnimationMutation } from './mutations/PlayAnimationMutation'
@@ -17,6 +23,8 @@ const Query = new GraphQLObjectType({
   fields: () => ({
     animation: AnimationQuery,
     animations: AnimationsQuery,
+    ledBar: LedBarQuery,
+    ledBars: LedBarsQuery,
     animationSequence: AnimationSequenceQuery,
     animationSequences: AnimationSequencesQuery,
     node: nodeField,
