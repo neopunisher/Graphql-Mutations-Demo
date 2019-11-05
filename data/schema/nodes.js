@@ -27,6 +27,10 @@ import {
   getAnimationSequenceName,
 } from '../database'
 
+import {
+  Int2rgb
+} from '../ledbar'
+
 const { nodeInterface, nodeField } = nodeDefinitions(
   globalId => {
     const { type, id } = fromGlobalId(globalId)
@@ -128,7 +132,7 @@ const GraphQLAnimationFrame = new GraphQLObjectType({
   fields: {
     leds: {
       type: new GraphQLList(GraphQLPixel),
-      resolve: (root) => root.leds
+      resolve: (root) => root.map(Int2rgb)
     },
   },
 })
@@ -140,6 +144,10 @@ const GraphQLAnimation = new GraphQLObjectType({
     name: {
       type: new GraphQLNonNull(GraphQLString),
       resolve: root => getAnimationName(root.id),
+    },
+    delay: {
+      type: GraphQLInt,
+      resolve: (root) => root.delay
     },
     frames: {
       type: new GraphQLList(GraphQLAnimationFrame),

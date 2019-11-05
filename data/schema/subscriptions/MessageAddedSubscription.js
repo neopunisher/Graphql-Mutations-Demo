@@ -1,6 +1,4 @@
-import { cursorForObjectInConnection } from 'graphql-relay'
 import { GraphQLObjectType } from 'graphql'
-
 import { GraphQLMessage } from '../nodes'
 
 const MessageAddedPayload = new GraphQLObjectType({
@@ -8,7 +6,7 @@ const MessageAddedPayload = new GraphQLObjectType({
   fields: {
     message: {
       type: GraphQLMessage,
-      resolve: ({ conversation }) => conversation,
+      resolve: ({ message }) => message,
     },
   },
 })

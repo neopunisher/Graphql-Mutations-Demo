@@ -10,7 +10,7 @@ import {
 } from 'graphql'
 
 import {
-  playAnimationAt
+  playAnimation
 } from '../../ledbar'
 
 import { GraphQLAnimation } from '../nodes'
@@ -41,7 +41,7 @@ const PlayAnimationMutation = mutationWithClientMutationId({
       throw new Error(`Incorrect secret for ${ledbar.id}.`);
     }
     else {
-      playAnimationAt(animation, ledbar.index);
+      playAnimation(animation, ledbar.index);
     }
     return { animation }
   },

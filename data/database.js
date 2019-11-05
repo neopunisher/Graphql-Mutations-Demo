@@ -15,7 +15,7 @@ export class Animation {
   constructor(id, name, frames, delay = 100) {
     this.id = id
     this.name = name
-    this.delay = delay
+    this.delay = Number(delay)
     this.frames = frames
     decorate(this)
   }
@@ -36,15 +36,15 @@ export class AnimationSequence {
 export class AnimationFrame {
   constructor(leds, index) {
     this.leds = leds
-    this.index = index
+    this.index = Number(index)
   }
 }
 
 export class LedBar {
   constructor({id, password, index, numLeds}){
     this.id = id
-    this.numLeds = numLeds
-    this.index = index
+    this.numLeds = Number(numLeds)
+    this.index = Number(index)
     this.secret = password
   }
 }
@@ -115,11 +115,19 @@ export async function addAnimation(name, delay = 100) {
   await Promise.all(cmds)
   return animation
 }
+export async function addMessage(text) {
+  const message = new Message(uuid(), text)
+  const hash = {id: message.id, text: message.text}
+  let cmds = Object.entries(hash).map(([key, val])=>client.hset(`message:${message.id}`, key, val))
+  await Promise.all(cmds)
+  return message
+}
 export async function addAnimationFrame(id, leds) {
   const created_at_idx = await client.rpush(`animationFrames:${id}`, JSON.stringify(leds))
   const frame = new AnimationFrame(leds, created_at_idx)
   return frame
 }
+
 export async function addAnimationSequence(name, animation_ids) {
   const animationSequence = new AnimationSequence(uuid(), name, await Promise.all(animation_ids.map(getAnimation)))
   let cmds = Object.entries({id: animationSequence.id, name: animationSequence.name}).map(([key, val])=>client.hset(`animationSequence:${animationSequence.id}`, key, val))

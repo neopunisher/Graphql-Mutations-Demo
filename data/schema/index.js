@@ -16,6 +16,7 @@ import {
 import { AddAnimationMutation } from './mutations/AddAnimationMutation'
 import { AddAnimationFrameMutation } from './mutations/AddAnimationFrameMutation'
 import { PlayAnimationMutation } from './mutations/PlayAnimationMutation'
+import { IdentifySegmentMutation } from './mutations/IdentifySegmentMutation'
 import { MessageAddedSubscription } from './subscriptions/MessageAddedSubscription'
 
 const Query = new GraphQLObjectType({
@@ -41,6 +42,7 @@ const Mutation = new GraphQLObjectType({
     addAnimation: AddAnimationMutation,
     addAnimationFrame: AddAnimationFrameMutation,
     playAnimation: PlayAnimationMutation,
+    identifySegment: IdentifySegmentMutation,
   },
 })
 

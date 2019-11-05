@@ -24,6 +24,7 @@ type Animation implements Node {
   """The ID of an object"""
   id: ID!
   name: String!
+  delay: Int
   frames: [AnimationFrame]
 }
 
@@ -74,6 +75,23 @@ type AnimationSequenceEdge {
   cursor: String!
 }
 
+enum Colors {
+  RED
+  GREEN
+  BLUE
+}
+
+input IdentifySegmentInput {
+  ledBarId: ID!
+  color: Colors!
+  clientMutationId: String
+}
+
+type IdentifySegmentPayload {
+  ledBar: LedBar!
+  clientMutationId: String
+}
+
 type LedBar implements Node {
   """The ID of an object"""
   id: ID!
@@ -113,6 +131,7 @@ type Mutation {
   addAnimation(input: AddAnimationInput!): AddAnimationPayload
   addAnimationFrame(input: AddAnimationFrameInput!): AddAnimationFramePayload
   playAnimation(input: PlayAnimationInput!): PlayAnimationPayload
+  identifySegment(input: IdentifySegmentInput!): IdentifySegmentPayload
 }
 
 """An object with an ID"""
